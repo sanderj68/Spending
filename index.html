@@ -26,7 +26,7 @@ main{padding:19px 22px 17px}
 label{font-size:13px;font-weight:650;white-space:nowrap}
 .input-wrap{position:relative;flex:1;min-width:0}
 .currency{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:#52657a}
-input{width:100%;border:1px solid #bdcbd9;border-radius:8px;padding:10px 12px 10px 29px;font:600 16px inherit;color:#17283d;outline:none;background:#fff}
+input{width:100%;border:1px solid #bdcbd9;border-radius:8px;padding:10px 12px 10px 29px;font-family:inherit;font-size:16px;font-weight:600;color:#17283d;outline:none;background:#fff;-webkit-appearance:none;appearance:none}
 input:focus{border-color:#397db8;box-shadow:0 0 0 3px #397db81c}
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:13px 0;border-top:1px solid #e6ebf1;border-bottom:1px solid #e6ebf1}
 .metric .value{font-size:20px;font-weight:750}
@@ -142,8 +142,8 @@ function update(){
  const baseline=days*10;
  $('days').textContent=days;
  $('baseline').textContent=money(baseline);
- $('low-range').textContent=money(baseline+50)+' or less';
- $('healthy-range').textContent=money(baseline+50.01)+'–'+money(baseline+100);
+ $('low-range').textContent='Below '+money(baseline);
+ $('healthy-range').textContent=money(baseline)+'–'+money(baseline+100);
  $('above-range').textContent='More than '+money(baseline+100);
 
  const raw=$('balance').value;
@@ -172,7 +172,7 @@ function update(){
  $('money-pct').textContent=Math.round(moneyPct)+'%';
  $('money-fill').style.width=Math.min(100,moneyPct)+'%';
 
- const status=surplus<=50?'LOW':surplus<=100?'ON TRACK':'ABOVE';
+ const status=surplus<0?'LOW':surplus<=100?'ON TRACK':'ABOVE';
  const color=status==='LOW'?'#d94b4b':status==='ON TRACK'?'#269b68':'#2787d5';
  const paceResult=$('pace-result');
  paceResult.className='pace-result';
@@ -180,7 +180,7 @@ function update(){
  if(status==='LOW'){
   paceResult.classList.add('red');
   $('pace-headline').textContent='Needs attention';
-  const daysToTrack=Math.max(1,Math.floor((50-surplus)/10)+1);
+  const daysToTrack=Math.max(1,Math.ceil((0-surplus)/10));
   const daysLeftAfterToday=days-1;
   if(daysToTrack<=daysLeftAfterToday){
    $('pace-detail').textContent='Try not to spend for the next '+daysToTrack+' '+(daysToTrack===1?'day':'days')+' to get back ON TRACK.';
@@ -210,8 +210,9 @@ function update(){
   $('progress-detail').textContent='You are already in the highest status category for this month.';
   return;
  }
- const target=status==='LOW'?50:100;
- const daysNeeded=Math.max(1,Math.floor((target-surplus)/10)+1);
+ const daysNeeded=status==='LOW'
+  ? Math.max(1,Math.ceil((0-surplus)/10))
+  : Math.max(1,Math.floor((100-surplus)/10)+1);
  const daysAvailable=days-1;
  const nextStatus=status==='LOW'?'ON TRACK':'ABOVE';
  if(daysNeeded<=daysAvailable){
