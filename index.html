@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en-GB">
 <head>
@@ -38,23 +37,16 @@ input:focus{border-color:#397db8;box-shadow:0 0 0 3px #397db81c}
 .guide-labels{margin-top:7px}
 .guide-labels div{font-size:11px;color:#536579;line-height:1.45}
 .guide-labels strong{display:block;font-size:12px;color:#25384d}
-footer{background:#142d49;color:white;padding:11px 22px;display:flex;justify-content:space-between;gap:12px;font-size:11px}
+.progress{margin-top:12px;border:1px solid #dce8df;background:#f3faf5;border-radius:10px;padding:11px 13px}
+.progress .headline{font-size:14px;font-weight:750;color:#1d6545}
+.progress .detail{font-size:11px;color:#607568;margin-top:3px;line-height:1.4}
 .note{font-size:11px;color:#718096;margin-top:10px;line-height:1.4}
+footer{background:#142d49;color:white;padding:11px 22px;display:flex;justify-content:space-between;gap:12px;font-size:11px}
 @media(max-width:520px){
-body{padding:10px}
-.dashboard{border-radius:12px}
-header{padding:15px}
-h1{font-size:18px}
-.date{font-size:11px}
-main{padding:14px}
-.top{gap:8px}
-.panel{padding:11px}
-.input-row{gap:8px;flex-wrap:wrap}
-.input-row label{width:100%}
-.metrics{gap:6px}
-.metric .value{font-size:17px}
-.guide-labels div{font-size:10px}
-footer{padding:10px 14px;font-size:10px}
+body{padding:10px}.dashboard{border-radius:12px}header{padding:15px}h1{font-size:18px}.date{font-size:11px}
+main{padding:14px}.top{gap:8px}.panel{padding:11px}.input-row{gap:8px;flex-wrap:wrap}
+.input-row label{width:100%}.metrics{gap:6px}.metric .value{font-size:17px}
+.guide-labels div{font-size:10px}footer{padding:10px 14px;font-size:10px}
 }
 </style>
 </head>
@@ -72,71 +64,44 @@ footer{padding:10px 14px;font-size:10px}
 </section>
 <section class="panel">
 <div class="eyebrow">FINANCIAL HEALTH</div>
-<div class="status">
-<span class="status-dot" id="dot"></span>
-<span class="status-word" id="status">—</span>
-</div>
+<div class="status"><span class="status-dot" id="dot"></span><span class="status-word" id="status">—</span></div>
 </section>
 </div>
 <div class="input-row">
 <label for="balance">Your current balance</label>
-<div class="input-wrap">
-<span class="currency">£</span>
-<input id="balance" type="number" min="0" step="0.01" placeholder="Enter amount">
-</div>
+<div class="input-wrap"><span class="currency">£</span><input id="balance" type="number" min="0" step="0.01" placeholder="Enter amount"></div>
 </div>
 <div class="metrics">
-<div class="metric">
-<div class="eyebrow">DAYS REMAINING</div>
-<div class="value" id="days">—</div>
-</div>
-<div class="metric">
-<div class="eyebrow">BASELINE REQUIRED</div>
-<div class="value" id="baseline">—</div>
-</div>
-<div class="metric">
-<div class="eyebrow">SURPLUS / DEFICIT</div>
-<div class="value" id="surplus">—</div>
-</div>
+<div class="metric"><div class="eyebrow">DAYS REMAINING</div><div class="value" id="days">—</div></div>
+<div class="metric"><div class="eyebrow">BASELINE REQUIRED</div><div class="value" id="baseline">—</div></div>
+<div class="metric"><div class="eyebrow">SURPLUS / DEFICIT</div><div class="value" id="surplus">—</div></div>
 </div>
 <div class="health-guide">
 <div class="guide-title">FINANCIAL HEALTH THRESHOLDS</div>
-<div class="bars">
-<div class="bar low"></div>
-<div class="bar healthy"></div>
-<div class="bar above"></div>
-</div>
+<div class="bars"><div class="bar low"></div><div class="bar healthy"></div><div class="bar above"></div></div>
 <div class="guide-labels">
 <div><strong>LOW</strong><span id="low-range">—</span></div>
 <div><strong>HEALTHY</strong><span id="healthy-range">—</span></div>
 <div><strong>ABOVE</strong><span id="above-range">—</span></div>
 </div>
 </div>
-<div class="note">
-Days remaining includes today. Baseline is £10 per remaining day. Enter your total available balance, including carry-over.
-</div>
+<section class="progress" aria-live="polite">
+<div class="headline" id="progress-headline">Your next status milestone will appear here.</div>
+<div class="detail" id="progress-detail">Enter your balance to see how many days away the next category is, assuming no further spending.</div>
+</section>
+<div class="note">Days remaining includes today. Baseline is £10 per remaining day. Status improves by one category for each day that passes without spending, as the baseline falls by £10.</div>
 </main>
-<footer>
-<span>Monthly allowance: <strong>£310</strong></span>
-<span>Carry-over included</span>
-</footer>
+<footer><span>Monthly allowance: <strong>£310</strong></span><span>Carry-over included</span></footer>
 </section>
 <script>
 const $ = id => document.getElementById(id);
-const money = n => new Intl.NumberFormat('en-GB',{
-style:'currency',currency:'GBP'
-}).format(n);
+const money = n => new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(n);
 
 function update(){
  const now=new Date();
- $('today').textContent=now.toLocaleDateString('en-GB',{
- day:'numeric',month:'long',year:'numeric'
- });
- const days=new Date(
- now.getFullYear(),now.getMonth()+1,0
- ).getDate()-now.getDate()+1;
+ $('today').textContent=now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+ const days=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+1;
  const baseline=days*10;
-
  $('days').textContent=days;
  $('baseline').textContent=money(baseline);
  $('low-range').textContent=money(baseline+50)+' or less';
@@ -144,36 +109,39 @@ function update(){
  $('above-range').textContent='More than '+money(baseline+100);
 
  const raw=$('balance').value;
- const valid=raw.trim()!=='' &&
- Number.isFinite(Number(raw)) && Number(raw)>=0;
-
+ const valid=raw.trim()!=='' && Number.isFinite(Number(raw)) && Number(raw)>=0;
  if(!valid){
- $('total').textContent='—';
- $('status').textContent='—';
- $('surplus').textContent='—';
- $('surplus').className='value';
- $('dot').style.background='#94a3b8';
- $('status').style.color='#94a3b8';
- return;
+  $('total').textContent='—';$('status').textContent='—';$('surplus').textContent='—';
+  $('surplus').className='value';$('dot').style.background='#94a3b8';$('status').style.color='#94a3b8';
+  $('progress-headline').textContent='Your next status milestone will appear here.';
+  $('progress-detail').textContent='Enter your balance to see how many days away the next category is, assuming no further spending.';
+  return;
  }
+ const total=Number(raw), surplus=total-baseline;
+ const status=surplus<=50?'LOW':surplus<=100?'HEALTHY':'ABOVE';
+ const color=status==='LOW'?'#d94b4b':status==='HEALTHY'?'#269b68':'#347fc3';
+ $('total').textContent=money(total);$('status').textContent=status;
+ $('status').style.color=color;$('dot').style.background=color;
+ $('surplus').textContent=(surplus<0?'−':'+')+money(Math.abs(surplus));
+ $('surplus').className='value '+(surplus<0?'negative':'positive');
 
- const total=Number(raw);
- const surplus=total-baseline;
- const status=surplus<=50?'LOW':
- surplus<=100?'HEALTHY':'ABOVE';
- const color=status==='LOW'?'#d94b4b':
- status==='HEALTHY'?'#269b68':'#347fc3';
-
- $('total').textContent=money(total);
- $('status').textContent=status;
- $('status').style.color=color;
- $('dot').style.background=color;
- $('surplus').textContent=(surplus<0?'−':'+')+
- money(Math.abs(surplus));
- $('surplus').className='value '+
- (surplus<0?'negative':'positive');
+ if(status==='ABOVE'){
+  $('progress-headline').textContent='Already in the ABOVE category.';
+  $('progress-detail').textContent='You are already in the highest status category for this month.';
+  return;
+ }
+ const target=status==='LOW'?50:100;
+ const daysNeeded=Math.max(1,Math.floor((target-surplus)/10)+1);
+ const daysAvailable=days-1;
+ const nextStatus=status==='LOW'?'HEALTHY':'ABOVE';
+ if(daysNeeded<=daysAvailable){
+  $('progress-headline').textContent=daysNeeded+' '+(daysNeeded===1?'day':'days')+' until '+nextStatus;
+  $('progress-detail').textContent='If your balance stays at '+money(total)+', you will reach '+nextStatus+' in '+daysNeeded+' '+(daysNeeded===1?'day':'days')+'.';
+ }else{
+  $('progress-headline').textContent=nextStatus+' is not reachable before the end of this month.';
+  $('progress-detail').textContent='At your current balance, '+daysNeeded+' days would be needed, but only '+daysAvailable+' more '+(daysAvailable===1?'day':'days')+' remain after today. The calculation resets with the new month.';
+ }
 }
-
 $('balance').addEventListener('input',update);
 update();
 setInterval(update,60000);
