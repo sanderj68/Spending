@@ -39,6 +39,20 @@ input:focus{border-color:#397db8;box-shadow:0 0 0 3px #397db81c}
 .guide-labels{margin-top:7px}
 .guide-labels div{font-size:11px;color:#536579;line-height:1.45}
 .guide-labels strong{display:block;font-size:12px;color:#25384d}
+.pace{margin-top:13px;border:1px solid #e2e8f0;border-radius:10px;padding:12px 13px;background:#f8fafc}
+.pace-title{font-size:11px;font-weight:800;color:#52657a;margin-bottom:10px}
+.pace-row{margin:9px 0}
+.pace-meta{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-bottom:5px}
+.pace-meta strong{color:#26394e}
+.track{height:10px;background:#e5eaf0;border-radius:20px;overflow:hidden}
+.fill{height:100%;width:0;border-radius:20px;transition:width .2s ease}
+.month-fill{background:#8757b5}
+.money-fill{background:#269b68}
+.pace-result{margin-top:11px;border-radius:8px;padding:9px 10px;font-size:12px;font-weight:750}
+.pace-result.red{background:#fdecec;color:#a92f2f}
+.pace-result.green{background:#e8f5ed;color:#17633f}
+.pace-result.blue{background:#eaf2fb;color:#245f99}
+.pace-detail{font-size:11px;font-weight:500;margin-top:3px;line-height:1.4}
 .progress{margin-top:12px;border:1px solid #dce8df;background:#f3faf5;border-radius:10px;padding:11px 13px}
 .progress .headline{font-size:14px;font-weight:750;color:#1d6545}
 .progress .detail{font-size:11px;color:#607568;margin-top:3px;line-height:1.4}
@@ -94,6 +108,21 @@ footer{padding:12px 14px;font-size:10px}
 <div><strong>ABOVE</strong><span id="above-range">—</span></div>
 </div>
 </div>
+<section class="pace" aria-live="polite">
+<div class="pace-title">MONTHLY PACE</div>
+<div class="pace-row">
+ <div class="pace-meta"><span>Month remaining</span><strong id="month-pct">—</strong></div>
+ <div class="track"><div class="fill month-fill" id="month-fill"></div></div>
+</div>
+<div class="pace-row">
+ <div class="pace-meta"><span>Money remaining</span><strong id="money-pct">—</strong></div>
+ <div class="track"><div class="fill money-fill" id="money-fill"></div></div>
+</div>
+<div class="pace-result green" id="pace-result">
+ <div id="pace-headline">Enter your balance to compare your money with the time left in the month.</div>
+ <div class="pace-detail" id="pace-detail">Money remaining is compared with the percentage of the month remaining.</div>
+</div>
+</section>
 <section class="progress" aria-live="polite">
 <div class="headline" id="progress-headline">Your next status milestone will appear here.</div>
 <div class="detail" id="progress-detail">Enter your balance to see how many days away the next category is, assuming no further spending.</div>
@@ -121,12 +150,46 @@ function update(){
  const valid=raw.trim()!=='' && Number.isFinite(Number(raw)) && Number(raw)>=0;
  if(!valid){
   $('total').textContent='—';$('status').textContent='—';$('surplus').textContent='—';
+  const totalDays=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const monthPct=days/totalDays*100;
+  $('month-pct').textContent=Math.round(monthPct)+'%';
+  $('month-fill').style.width=monthPct+'%';
+  $('money-pct').textContent='—';$('money-fill').style.width='0%';$('money-fill').style.background='#269b68';
+  $('pace-result').className='pace-result green';
+  $('pace-headline').textContent='Enter your balance to compare your money with the time left in the month.';
+  $('pace-detail').textContent='Money remaining is compared with the percentage of the month remaining.';
   $('surplus').className='value';$('dot').style.background='#94a3b8';$('status').style.color='#94a3b8';
   $('progress-headline').textContent='Your next status milestone will appear here.';
   $('progress-detail').textContent='Enter your balance to see how many days away the next category is, assuming no further spending.';
   return;
  }
  const total=Number(raw), surplus=total-baseline;
+ const totalDays=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+ const monthPct=days/totalDays*100;
+ const moneyPct=total/310*100;
+ const difference=moneyPct-monthPct;
+ $('month-pct').textContent=Math.round(monthPct)+'%';
+ $('month-fill').style.width=monthPct+'%';
+ $('money-pct').textContent=Math.round(moneyPct)+'%';
+ $('money-fill').style.width=Math.min(100,moneyPct)+'%';
+ const paceResult=$('pace-result');
+ paceResult.className='pace-result';
+ if(difference < -2){
+  paceResult.classList.add('red');
+  $('pace-headline').textContent='Over spending';
+  $('pace-detail').textContent='Your money is '+Math.abs(Math.round(difference))+' percentage points behind the month. You are spending faster than time is passing.';
+  $('money-fill').style.background='#d94b4b';
+ }else if(difference > 2){
+  paceResult.classList.add('blue');
+  $('pace-headline').textContent='Likely to finish with a surplus';
+  $('pace-detail').textContent='Your money is '+Math.round(difference)+' percentage points ahead of the month. You are on course to finish with money left over.';
+  $('money-fill').style.background='#347fc3';
+ }else{
+  paceResult.classList.add('green');
+  $('pace-headline').textContent='In line';
+  $('pace-detail').textContent='Your money and the month are moving at roughly the same pace.';
+  $('money-fill').style.background='#269b68';
+ }
  const status=surplus<=50?'LOW':surplus<=100?'HEALTHY':'ABOVE';
  const color=status==='LOW'?'#d94b4b':status==='HEALTHY'?'#269b68':'#347fc3';
  $('total').textContent=money(total);$('status').textContent=status;
