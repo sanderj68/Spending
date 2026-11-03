@@ -96,15 +96,15 @@ footer{padding:12px 14px;font-size:10px}
 </div>
 <div class="metrics">
 <div class="metric"><div class="eyebrow">DAYS REMAINING</div><div class="value" id="days">—</div></div>
-<div class="metric"><div class="eyebrow">BASELINE REQUIRED</div><div class="value" id="baseline">—</div></div>
-<div class="metric"><div class="eyebrow">SURPLUS / DEFICIT</div><div class="value" id="surplus">—</div></div>
+<div class="metric"><div class="eyebrow">BASELINE</div><div class="value" id="baseline">—</div></div>
+<div class="metric"><div class="eyebrow">AVAILABLE</div><div class="value" id="surplus">—</div></div>
 </div>
 <div class="health-guide">
 <div class="guide-title">FINANCIAL HEALTH THRESHOLDS</div>
 <div class="bars"><div class="bar low"></div><div class="bar healthy"></div><div class="bar above"></div></div>
 <div class="guide-labels">
 <div><strong>LOW</strong><span id="low-range">—</span></div>
-<div><strong>HEALTHY</strong><span id="healthy-range">—</span></div>
+<div><strong>ON TRACK</strong><span id="healthy-range">—</span></div>
 <div><strong>ABOVE</strong><span id="above-range">—</span></div>
 </div>
 </div>
@@ -167,31 +167,39 @@ function update(){
  const totalDays=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
  const monthPct=days/totalDays*100;
  const moneyPct=total/310*100;
- const difference=moneyPct-monthPct;
  $('month-pct').textContent=Math.round(monthPct)+'%';
  $('month-fill').style.width=monthPct+'%';
  $('money-pct').textContent=Math.round(moneyPct)+'%';
  $('money-fill').style.width=Math.min(100,moneyPct)+'%';
+
+ const status=surplus<=50?'LOW':surplus<=100?'ON TRACK':'ABOVE';
+ const color=status==='LOW'?'#d94b4b':status==='ON TRACK'?'#269b68':'#2787d5';
  const paceResult=$('pace-result');
  paceResult.className='pace-result';
- if(difference < -2){
+ $('money-fill').style.background=color;
+ if(status==='LOW'){
   paceResult.classList.add('red');
-  $('pace-headline').textContent='Over spending';
-  $('pace-detail').textContent='Your money is '+Math.abs(Math.round(difference))+' percentage points behind the month. You are spending faster than time is passing.';
-  $('money-fill').style.background='#d94b4b';
- }else if(difference > 2){
-  paceResult.classList.add('blue');
-  $('pace-headline').textContent='Likely to finish with a surplus';
-  $('pace-detail').textContent='Your money is '+Math.round(difference)+' percentage points ahead of the month. You are on course to finish with money left over.';
-  $('money-fill').style.background='#347fc3';
- }else{
+  $('pace-headline').textContent='Needs attention';
+  const daysToTrack=Math.max(1,Math.floor((50-surplus)/10)+1);
+  const daysLeftAfterToday=days-1;
+  if(daysToTrack<=daysLeftAfterToday){
+   $('pace-detail').textContent='Try not to spend for the next '+daysToTrack+' '+(daysToTrack===1?'day':'days')+' to get back ON TRACK.';
+  }else{
+   $('pace-detail').textContent='Keep spending to a minimum. At your current balance, ON TRACK cannot be reached before the end of this month.';
+  }
+ }else if(status==='ON TRACK'){
   paceResult.classList.add('green');
-  $('pace-headline').textContent='In line';
-  $('pace-detail').textContent='Your money and the month are moving at roughly the same pace.';
-  $('money-fill').style.background='#269b68';
+  $('pace-headline').textContent='ON TRACK';
+  const daysToAbove=Math.max(1,Math.floor((100-surplus)/10)+1);
+  const daysLeftAfterToday=days-1;
+  $('pace-detail').textContent=daysToAbove<=daysLeftAfterToday
+   ? daysToAbove+' more '+(daysToAbove===1?'day':'days')+' until ABOVE.'
+   : 'Keep going. You are ON TRACK, but ABOVE is unlikely before the end of this month.';
+ }else{
+  paceResult.classList.add('blue');
+  $('pace-headline').textContent='ABOVE';
+  $('pace-detail').textContent='You are on course to have money left over!';
  }
- const status=surplus<=50?'LOW':surplus<=100?'HEALTHY':'ABOVE';
- const color=status==='LOW'?'#d94b4b':status==='HEALTHY'?'#269b68':'#347fc3';
  $('total').textContent=money(total);$('status').textContent=status;
  $('status').style.color=color;$('dot').style.background=color;
  $('surplus').textContent=(surplus<0?'−':'+')+money(Math.abs(surplus));
@@ -205,7 +213,7 @@ function update(){
  const target=status==='LOW'?50:100;
  const daysNeeded=Math.max(1,Math.floor((target-surplus)/10)+1);
  const daysAvailable=days-1;
- const nextStatus=status==='LOW'?'HEALTHY':'ABOVE';
+ const nextStatus=status==='LOW'?'ON TRACK':'ABOVE';
  if(daysNeeded<=daysAvailable){
   $('progress-headline').textContent=daysNeeded+' '+(daysNeeded===1?'day':'days')+' until '+nextStatus;
   $('progress-detail').textContent='If your balance stays at '+money(total)+', you will reach '+nextStatus+' in '+daysNeeded+' '+(daysNeeded===1?'day':'days')+'.';
