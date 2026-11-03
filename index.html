@@ -1,0 +1,182 @@
+
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Spending Dashboard</title>
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#17283d;background:#f3f6fa}
+*{box-sizing:border-box}
+body{margin:0;padding:22px;min-height:100vh;display:grid;place-items:start center}
+.dashboard{width:min(100%,760px);background:#fff;border:1px solid #dce3ec;border-radius:16px;overflow:hidden;box-shadow:0 8px 28px #1b355012}
+header{background:#142d49;color:white;padding:17px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:21px;margin:0;font-weight:700}
+.date{font-size:13px;color:#d6e1ed}
+main{padding:19px 22px 17px}
+.top{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:#f4f7fb;border:1px solid #e5ebf2;border-radius:11px;padding:13px 15px}
+.eyebrow{font-size:10px;font-weight:800;letter-spacing:.8px;color:#64748b;margin-bottom:7px}
+.big{font-size:clamp(25px,5vw,34px);font-weight:750;overflow-wrap:anywhere}
+.status{display:flex;align-items:center;gap:9px}
+.status-dot{width:11px;height:11px;border-radius:50%;background:#94a3b8}
+.status-word{font-size:clamp(23px,4.5vw,31px);font-weight:800}
+.input-row{display:flex;align-items:center;gap:12px;margin:13px 0 14px}
+label{font-size:13px;font-weight:650;white-space:nowrap}
+.input-wrap{position:relative;flex:1;min-width:0}
+.currency{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:#52657a}
+input{width:100%;border:1px solid #bdcbd9;border-radius:8px;padding:10px 12px 10px 29px;font:600 16px inherit;color:#17283d;outline:none;background:#fff}
+input:focus{border-color:#397db8;box-shadow:0 0 0 3px #397db81c}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:13px 0;border-top:1px solid #e6ebf1;border-bottom:1px solid #e6ebf1}
+.metric .value{font-size:20px;font-weight:750}
+.positive{color:#208457}.negative{color:#c63e3e}
+.health-guide{padding-top:13px}
+.guide-title{font-size:11px;font-weight:800;color:#64748b;margin-bottom:8px}
+.bars,.guide-labels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bar{height:7px;border-radius:20px}
+.low{background:#d94b4b}.healthy{background:#269b68}.above{background:#347fc3}
+.guide-labels{margin-top:7px}
+.guide-labels div{font-size:11px;color:#536579;line-height:1.45}
+.guide-labels strong{display:block;font-size:12px;color:#25384d}
+footer{background:#142d49;color:white;padding:11px 22px;display:flex;justify-content:space-between;gap:12px;font-size:11px}
+.note{font-size:11px;color:#718096;margin-top:10px;line-height:1.4}
+@media(max-width:520px){
+body{padding:10px}
+.dashboard{border-radius:12px}
+header{padding:15px}
+h1{font-size:18px}
+.date{font-size:11px}
+main{padding:14px}
+.top{gap:8px}
+.panel{padding:11px}
+.input-row{gap:8px;flex-wrap:wrap}
+.input-row label{width:100%}
+.metrics{gap:6px}
+.metric .value{font-size:17px}
+.guide-labels div{font-size:10px}
+footer{padding:10px 14px;font-size:10px}
+}
+</style>
+</head>
+<body>
+<section class="dashboard">
+<header>
+<h1>My Spending Dashboard</h1>
+<div class="date" id="today">—</div>
+</header>
+<main>
+<div class="top">
+<section class="panel">
+<div class="eyebrow">TOTAL REMAINING</div>
+<div class="big" id="total">—</div>
+</section>
+<section class="panel">
+<div class="eyebrow">FINANCIAL HEALTH</div>
+<div class="status">
+<span class="status-dot" id="dot"></span>
+<span class="status-word" id="status">—</span>
+</div>
+</section>
+</div>
+<div class="input-row">
+<label for="balance">Your current balance</label>
+<div class="input-wrap">
+<span class="currency">£</span>
+<input id="balance" type="number" min="0" step="0.01" placeholder="Enter amount">
+</div>
+</div>
+<div class="metrics">
+<div class="metric">
+<div class="eyebrow">DAYS REMAINING</div>
+<div class="value" id="days">—</div>
+</div>
+<div class="metric">
+<div class="eyebrow">BASELINE REQUIRED</div>
+<div class="value" id="baseline">—</div>
+</div>
+<div class="metric">
+<div class="eyebrow">SURPLUS / DEFICIT</div>
+<div class="value" id="surplus">—</div>
+</div>
+</div>
+<div class="health-guide">
+<div class="guide-title">FINANCIAL HEALTH THRESHOLDS</div>
+<div class="bars">
+<div class="bar low"></div>
+<div class="bar healthy"></div>
+<div class="bar above"></div>
+</div>
+<div class="guide-labels">
+<div><strong>LOW</strong><span id="low-range">—</span></div>
+<div><strong>HEALTHY</strong><span id="healthy-range">—</span></div>
+<div><strong>ABOVE</strong><span id="above-range">—</span></div>
+</div>
+</div>
+<div class="note">
+Days remaining includes today. Baseline is £10 per remaining day. Enter your total available balance, including carry-over.
+</div>
+</main>
+<footer>
+<span>Monthly allowance: <strong>£310</strong></span>
+<span>Carry-over included</span>
+</footer>
+</section>
+<script>
+const $ = id => document.getElementById(id);
+const money = n => new Intl.NumberFormat('en-GB',{
+style:'currency',currency:'GBP'
+}).format(n);
+
+function update(){
+ const now=new Date();
+ $('today').textContent=now.toLocaleDateString('en-GB',{
+ day:'numeric',month:'long',year:'numeric'
+ });
+ const days=new Date(
+ now.getFullYear(),now.getMonth()+1,0
+ ).getDate()-now.getDate()+1;
+ const baseline=days*10;
+
+ $('days').textContent=days;
+ $('baseline').textContent=money(baseline);
+ $('low-range').textContent=money(baseline+50)+' or less';
+ $('healthy-range').textContent=money(baseline+50.01)+'–'+money(baseline+100);
+ $('above-range').textContent='More than '+money(baseline+100);
+
+ const raw=$('balance').value;
+ const valid=raw.trim()!=='' &&
+ Number.isFinite(Number(raw)) && Number(raw)>=0;
+
+ if(!valid){
+ $('total').textContent='—';
+ $('status').textContent='—';
+ $('surplus').textContent='—';
+ $('surplus').className='value';
+ $('dot').style.background='#94a3b8';
+ $('status').style.color='#94a3b8';
+ return;
+ }
+
+ const total=Number(raw);
+ const surplus=total-baseline;
+ const status=surplus<=50?'LOW':
+ surplus<=100?'HEALTHY':'ABOVE';
+ const color=status==='LOW'?'#d94b4b':
+ status==='HEALTHY'?'#269b68':'#347fc3';
+
+ $('total').textContent=money(total);
+ $('status').textContent=status;
+ $('status').style.color=color;
+ $('dot').style.background=color;
+ $('surplus').textContent=(surplus<0?'−':'+')+
+ money(Math.abs(surplus));
+ $('surplus').className='value '+
+ (surplus<0?'negative':'positive');
+}
+
+$('balance').addEventListener('input',update);
+update();
+setInterval(update,60000);
+</script>
+</body>
+</html>
